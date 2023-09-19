@@ -126,7 +126,7 @@ class NodeTypeField(BaseModel):
 
         annotations = {}
         if hasattr(model, "__annotations__"):
-            annotations.update(model.__annotations__)
+            annotations |= model.__annotations__
         if issubclass(model, ABC):
             for base in model.__bases__:
                 if hasattr(base, "__annotations__"):
@@ -144,8 +144,7 @@ class NodeTypeField(BaseModel):
             default = None
             required = False
             if hasattr(model, "__fields__"):
-                model_field = model.__fields__.get(field_name)
-                if model_field:
+                if model_field := model.__fields__.get(field_name):
                     default = model_field.default
                     required = model_field.required
             elif hasattr(model, "__dict__"):
@@ -246,7 +245,7 @@ class NodeTypeField(BaseModel):
                 field_info["input_type"] = "select"
 
             if field_options and field.name in field_options:
-                field_info.update(field_options[field.name])
+                field_info |= field_options[field.name]
 
             results.append(field_info)
 

@@ -133,16 +133,14 @@ def load_node(node: ChainNode, context: IxContext, root=True) -> Any:
             # ix specific features into the config dict
             logger.debug(f"Loading with property loader for type={node_type.type}")
             config[key] = property_loader(node_group, context)
+        elif connector.get("multiple", False):
+            config[key] = [
+                prop_node.load(context, root=False) for prop_node in node_group
+            ]
+        elif len(node_group) > 1:
+            raise ValueError(f"Multiple values for {key} not allowed")
         else:
-            # default recursive loading
-            if connector.get("multiple", False):
-                config[key] = [
-                    prop_node.load(context, root=False) for prop_node in node_group
-                ]
-            else:
-                if len(node_group) > 1:
-                    raise ValueError(f"Multiple values for {key} not allowed")
-                config[key] = load_node(node_group[0], context, root=False)
+            config[key] = load_node(node_group[0], context, root=False)
 
     # load component class and initialize. A type specific initializer may be used here
     # for initialization common to all components of that type.

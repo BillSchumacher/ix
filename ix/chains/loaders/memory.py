@@ -127,8 +127,7 @@ def get_memory_session(
     scope = config.pop("session_scope", "chat")
     if scope in {"", None}:
         scope = "chat"
-    supported_scopes = get_memory_option(cls, "supported_scopes", False)
-    if supported_scopes:
+    if supported_scopes := get_memory_option(cls, "supported_scopes", False):
         assert scope in supported_scopes
 
     # load session_id from context based on scope
@@ -143,9 +142,7 @@ def get_memory_session(
     else:
         raise ValueError(f"unknown scope={scope}")
 
-    # build session_id
-    prefix = config.pop("session_prefix", None)
-    if prefix:
+    if prefix := config.pop("session_prefix", None):
         session_id = f"{prefix}_{scope}_{scope_id}"
     else:
         session_id = f"{scope}_{scope_id}"

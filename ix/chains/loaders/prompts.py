@@ -58,7 +58,6 @@ def create_message(message: Dict[str, Any]) -> BaseStringMessagePromptTemplate:
     prompt_config = {
         "input_variables": [],
         "partial_variables": {},
-    }
-    prompt_config.update(message_config)
+    } | message_config
     prompt = PromptTemplate(**prompt_config)
     return template_class(prompt=prompt)

@@ -87,7 +87,7 @@ class TestArtifactMemory:
         artifact2 = await afake_artifact(task=atask, key="test_artifact_2")
 
         # test no artifact_keys
-        result1 = instance.load_memory_variables(dict())
+        result1 = instance.load_memory_variables({})
         assert result1 == {"related_artifacts": ""}
 
         # test empty artifact_keys
