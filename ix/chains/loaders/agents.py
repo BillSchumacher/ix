@@ -31,7 +31,7 @@ def initialize_agent(agent: AgentType, **kwargs) -> Chain:
     if "tools" in kwargs:
         tools = kwargs["tools"]
         unpacked_tools = []
-        for i, value in enumerate(tools):
+        for value in tools:
             if isinstance(value, BaseToolkit):
                 unpacked_tools.extend(value.get_tools())
             else:

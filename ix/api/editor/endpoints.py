@@ -44,8 +44,7 @@ async def set_chain_root(chain_id: UUID, update_root: UpdateRoot):
         str(node_id) async for node_id in old_roots.values_list("id", flat=True)
     ]
     await old_roots.aupdate(root=False)
-    node_id = update_root.node_id
-    if node_id:
+    if node_id := update_root.node_id:
         new_root = await ChainNode.objects.aget(id=node_id)
         new_root.root = True
         await new_root.asave(update_fields=["root"])

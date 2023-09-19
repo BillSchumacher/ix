@@ -118,11 +118,7 @@ class TaskLogMessage(models.Model):
         # SYSTEM messages that are included as history must be converted to the USER role. SYSTEM is a special meaning
         # that configures the agent. Messages must either be ASSISTANT or USER for the model to interpret it as
         # conversation.
-        if self.role == "system":
-            role = "user"
-        else:
-            role = self.role
-
+        role = "user" if self.role == "system" else self.role
         # return content_type specific formatting to tune AI response
         if content_type == "FEEDBACK":
             content_str = content["feedback"]
@@ -162,8 +158,8 @@ class Artifact(models.Model):
     def data(self):
         """Fetch related data for this artifact"""
         storage_type = self.storage["type"]
-        storage_id = self.storage["id"]
         if storage_type == "write_to_file":
+            storage_id = self.storage["id"]
             # TODO: should push this out to a storage subsystem.
             return read_file(storage_id)
         return None

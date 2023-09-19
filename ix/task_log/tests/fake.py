@@ -16,14 +16,15 @@ def fake_chain(**kwargs):
     """
     Create a fake chain with a root ChainNode.
     """
-    chain_kwargs = dict(
-        id=uuid.uuid4(),
-        name=fake.unique.name(),
-        description=fake.text(),
+    chain_kwargs = (
+        dict(
+            id=uuid.uuid4(),
+            name=fake.unique.name(),
+            description=fake.text(),
+        )
+        | kwargs
     )
-    chain_kwargs.update(kwargs)
-    chain = Chain.objects.create(**chain_kwargs)
-    return chain
+    return Chain.objects.create(**chain_kwargs)
 
 
 async def afake_chain(**kwargs):
@@ -65,15 +66,13 @@ def fake_chain_edge(**kwargs):
     if target_node is None:
         target_node = fake_chain_node(chain=chain)
 
-    edge = ChainEdge.objects.create(
+    return ChainEdge.objects.create(
         source=source_node,
         target=target_node,
         key=kwargs.get("key", "default_key"),
         chain=chain,
         input_map=kwargs.get("input_map", {}),
     )
-
-    return edge
 
 
 async def afake_chain_edge(**kwargs):
@@ -101,7 +100,7 @@ def fake_agent(**kwargs):
     chain = kwargs.get("chain", fake_chain())
     fake_chain_node(chain=chain)
 
-    agent = Agent.objects.create(
+    return Agent.objects.create(
         pk=kwargs.get("pk"),
         name=name,
         alias=alias,
@@ -110,7 +109,6 @@ def fake_agent(**kwargs):
         config=config,
         chain=chain,
     )
-    return agent
 
 
 async def afake_agent(**kwargs):
@@ -122,8 +120,9 @@ def fake_user(**kwargs):
     email = kwargs.get("email", fake.unique.email())
     password = kwargs.get("password", fake.password())
 
-    user = User.objects.create_user(username=username, email=email, password=password)
-    return user
+    return User.objects.create_user(
+        username=username, email=email, password=password
+    )
 
 
 async def afake_user(**kwargs):
@@ -133,8 +132,7 @@ async def afake_user(**kwargs):
 def fake_task(**kwargs):
     user = kwargs.pop("user", None) or fake_user()
     agent = kwargs.pop("agent", None) or fake_agent()
-    task = Task.objects.create(user=user, agent=agent, chain=agent.chain, **kwargs)
-    return task
+    return Task.objects.create(user=user, agent=agent, chain=agent.chain, **kwargs)
 
 
 def fake_think(**kwargs):
@@ -187,7 +185,7 @@ def fake_feedback(
     task: Task = None, message_id: uuid.UUID = None, feedback: str = None, **kwargs
 ):
     content = {"type": "FEEDBACK", "feedback": feedback or "this is fake feedback"}
-    if not message_id and not message_id == -1:
+    if not message_id and message_id != -1:
         feedback_request = fake_feedback_request(task=task, question="test question")
         content["message_id"] = str(feedback_request.id)
 
@@ -305,7 +303,7 @@ def fake_task_log_msg(**kwargs):
 
 
 def fake_planner():
-    agent = fake_agent(
+    return fake_agent(
         name="Planner",
         purpose="Plan tasks for other agents to perform",
         system_prompt="",
@@ -314,7 +312,6 @@ def fake_planner():
             "temperature": 0.3,
         },
     )
-    return agent
 
 
 # default id so test chat is always the same URL. This will be needed until
@@ -330,10 +327,7 @@ def fake_chat(**kwargs):
     Chat.objects.filter(pk=chat_id).delete()
 
     agent = fake_planner()
-    if "task" in kwargs:
-        task = kwargs["task"]
-    else:
-        task = fake_task(agent=agent)
+    task = kwargs["task"] if "task" in kwargs else fake_task(agent=agent)
     chat = Chat.objects.create(id=chat_id, name=name, task=task, lead=agent)
 
     fake_feedback(
@@ -345,16 +339,17 @@ def fake_chat(**kwargs):
 
 def fake_artifact(**kwargs) -> Artifact:
     task = kwargs.get("task", Task.objects.order_by("?").first())
-    options = dict(
-        key="test_artifact_1",
-        artifact_type="file",
-        task=task,
-        name="Test Artifact 1",
-        description="This is a test artifact (1)",
-        storage={"type": "file", "id": "test_artifact"},
+    options = (
+        dict(
+            key="test_artifact_1",
+            artifact_type="file",
+            task=task,
+            name="Test Artifact 1",
+            description="This is a test artifact (1)",
+            storage={"type": "file", "id": "test_artifact"},
+        )
+        | kwargs
     )
-    options.update(kwargs)
-
     return Artifact.objects.create(**options)
 
 
